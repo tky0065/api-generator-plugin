@@ -1,0 +1,27 @@
+<idea-plugin>
+    <id>com.github.tky0065.apigenerator</id>
+    <name>API Generator</name>
+    <vendor email="support@github.com" url="https://github.com/tky0065">tky0065</vendor>
+
+    <description><![CDATA[
+        Plugin pour générer automatiquement un API CRUD complet à partir d'une entité JPA.<br>
+        <ul>
+            <li>Génération de DTO avec Lombok</li>
+            <li>Repository JPA</li>
+            <li>Service avec méthodes CRUD</li>
+            <li>Controller REST</li>
+            <li>Mappeurs entre entités et DTOs</li>
+        </ul>
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.java</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Aucune extension pour le moment -->
+    </extensions>
+
+    <actions>
+        <!-- Les actions seront ajoutées ultérieurement -->
+    </actions>
+</idea-plugin>

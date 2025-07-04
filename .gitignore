@@ -1,0 +1,12 @@
+/docs/
+
+.idea
+/.idea/
+/.idea/workspace.xml
+/.idea/tasks.xml
+
+
+# Compiled class files
+build
+.gradle
+/.gradle/
