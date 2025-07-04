@@ -19,10 +19,15 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
 }
 
+// Définition explicite de la version d'IntelliJ pour éviter toute confusion
+def intellijVersion = System.getenv("INTELLIJ_VERSION") ?: "2023.1"
+
 intellij {
-    version = '2023.1'
-    type = 'IC' // IntelliJ IDEA Community Edition
-    plugins = ['java']
+    version.set(intellijVersion) // Utilisation de la méthode set() pour éviter les conflits
+    type.set('IC') // IntelliJ IDEA Community Edition
+    plugins.set(['java'])
+    updateSinceUntilBuild.set(true)
+    downloadSources.set(true)
 }
 
 patchPluginXml {
