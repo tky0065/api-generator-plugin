@@ -42,10 +42,6 @@ jobs:
     - name: Verify plugin
       run: ./gradlew runPluginVerifier
 
-    - name: Generate test reports
-      run: ./gradlew jacocoTestReport
-      if: success() || failure()  # Générer les rapports même en cas d'échec des tests
-
     - name: Archive test results
       uses: actions/upload-artifact@v4
       with:
