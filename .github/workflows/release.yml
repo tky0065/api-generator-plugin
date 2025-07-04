@@ -43,7 +43,7 @@ jobs:
       run: ./gradlew runPluginVerifier
 
     - name: Upload plugin artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: api-generator-plugin
         path: build/distributions/*.zip
