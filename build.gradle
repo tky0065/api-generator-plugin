@@ -12,8 +12,8 @@ repositories {
 
 dependencies {
     implementation 'com.squareup:javapoet:1.13.0'
-    compileOnly 'org.projectlombok:lombok:1.18.28'
-    annotationProcessor 'org.projectlombok:lombok:1.18.28'
+    compileOnly 'org.projectlombok:lombok:1.18.38'
+    annotationProcessor 'org.projectlombok:lombok:1.18.38'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
@@ -31,7 +31,7 @@ patchPluginXml {
             <li>1.0.0 - Version initiale du générateur d'API</li>
         </ul>
     """)
-    sinceBuild.set("221") // Compatible avec 2022.1+
+    sinceBuild.set("231") // Compatible avec 2023.1+
     untilBuild.set("233.*") // Compatible jusqu'à 2023.3.x
 }
 
@@ -40,6 +40,6 @@ test {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
