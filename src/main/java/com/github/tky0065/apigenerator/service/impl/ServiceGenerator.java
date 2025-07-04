@@ -28,6 +28,22 @@ public class ServiceGenerator implements CodeGenerator {
         String repositoryClassName = entityModel.getClassName() + config.getRepositorySuffix();
         ClassName repositoryTypeName = ClassName.get(repositoryPackageName, repositoryClassName);
 
+        // Obtenir le nom complet de la classe DTO si elle est générée
+        TypeName dtoTypeName = null;
+        if (config.isGenerateDto()) {
+            String dtoPackageName = getDtoPackageName(entityModel, config);
+            String dtoClassName = entityModel.getClassName() + config.getDtoSuffix();
+            dtoTypeName = ClassName.get(dtoPackageName, dtoClassName);
+        }
+
+        // Obtenir le nom complet de la classe Mapper si elle est générée
+        ClassName mapperTypeName = null;
+        if (config.isGenerateDto() && config.isGenerateMapper()) {
+            String mapperPackageName = getMapperPackageName(entityModel, config);
+            String mapperClassName = entityModel.getClassName() + config.getMapperSuffix();
+            mapperTypeName = ClassName.get(mapperPackageName, mapperClassName);
+        }
+
         // Créer la classe Service
         TypeSpec.Builder classBuilder = TypeSpec.classBuilder(getGeneratedClassName(entityModel, config))
                 .addModifiers(Modifier.PUBLIC);
@@ -41,19 +57,45 @@ public class ServiceGenerator implements CodeGenerator {
                 .build();
         classBuilder.addField(repositoryField);
 
-        // Ajouter un constructeur pour l'injection de dépendances
-        MethodSpec constructor = MethodSpec.constructorBuilder()
-                .addModifiers(Modifier.PUBLIC)
-                .addParameter(repositoryTypeName, "repository")
-                .addStatement("this.$N = $N", "repository", "repository")
-                .build();
-        classBuilder.addMethod(constructor);
+        // Ajouter l'injection du Mapper si nécessaire
+        if (mapperTypeName != null) {
+            FieldSpec mapperField = FieldSpec.builder(mapperTypeName, "mapper", Modifier.PRIVATE, Modifier.FINAL)
+                    .build();
+            classBuilder.addField(mapperField);
 
-        // Ajouter les méthodes CRUD
-        addFindAllMethod(classBuilder, entityClassName);
-        addFindByIdMethod(classBuilder, entityClassName, idType);
-        addSaveMethod(classBuilder, entityClassName);
-        addDeleteMethod(classBuilder, entityClassName, idType);
+            // Modifier le constructeur pour injecter le mapper aussi
+            MethodSpec constructor = MethodSpec.constructorBuilder()
+                    .addModifiers(Modifier.PUBLIC)
+                    .addParameter(repositoryTypeName, "repository")
+                    .addParameter(mapperTypeName, "mapper")
+                    .addStatement("this.$N = $N", "repository", "repository")
+                    .addStatement("this.$N = $N", "mapper", "mapper")
+                    .build();
+            classBuilder.addMethod(constructor);
+        } else {
+            // Constructeur sans mapper
+            MethodSpec constructor = MethodSpec.constructorBuilder()
+                    .addModifiers(Modifier.PUBLIC)
+                    .addParameter(repositoryTypeName, "repository")
+                    .addStatement("this.$N = $N", "repository", "repository")
+                    .build();
+            classBuilder.addMethod(constructor);
+        }
+
+        // Ajouter les méthodes CRUD en fonction de la configuration
+        if (config.isGenerateDto() && config.isGenerateMapper()) {
+            // Utiliser les mappers pour convertir entre entités et DTOs
+            addFindAllMethodWithMapper(classBuilder, entityClassName, dtoTypeName);
+            addFindByIdMethodWithMapper(classBuilder, entityClassName, dtoTypeName, idType);
+            addSaveMethodWithMapper(classBuilder, entityClassName, dtoTypeName);
+            addDeleteMethod(classBuilder, entityClassName, idType);
+        } else {
+            // Méthodes sans conversion DTO
+            addFindAllMethod(classBuilder, entityClassName);
+            addFindByIdMethod(classBuilder, entityClassName, idType);
+            addSaveMethod(classBuilder, entityClassName);
+            addDeleteMethod(classBuilder, entityClassName, idType);
+        }
 
         // Créer le fichier Java
         JavaFile javaFile = JavaFile.builder(getGeneratedPackageName(entityModel, config), classBuilder.build())
@@ -95,6 +137,38 @@ public class ServiceGenerator implements CodeGenerator {
             return basePackage + config.getRepositoryPackage();
         } else {
             return basePackage + "." + config.getRepositoryPackage();
+        }
+    }
+
+    /**
+     * Obtient le nom du package pour les DTOs.
+     */
+    private String getDtoPackageName(EntityModel entityModel, ApiGeneratorConfig config) {
+        String basePackage = config.getBasePackage();
+        if (basePackage == null || basePackage.isEmpty()) {
+            basePackage = entityModel.getPackageName();
+        }
+
+        if (basePackage.endsWith(".")) {
+            return basePackage + config.getDtoPackage();
+        } else {
+            return basePackage + "." + config.getDtoPackage();
+        }
+    }
+
+    /**
+     * Obtient le nom du package pour les Mappers.
+     */
+    private String getMapperPackageName(EntityModel entityModel, ApiGeneratorConfig config) {
+        String basePackage = config.getBasePackage();
+        if (basePackage == null || basePackage.isEmpty()) {
+            basePackage = entityModel.getPackageName();
+        }
+
+        if (basePackage.endsWith(".")) {
+            return basePackage + config.getMapperPackage();
+        } else {
+            return basePackage + "." + config.getMapperPackage();
         }
     }
 
@@ -213,5 +287,53 @@ public class ServiceGenerator implements CodeGenerator {
                 .build();
 
         classBuilder.addMethod(delete);
+    }
+
+    /**
+     * Ajoute la méthode pour récupérer toutes les entités en utilisant les mappers.
+     */
+    private void addFindAllMethodWithMapper(TypeSpec.Builder classBuilder, TypeName entityType, TypeName dtoType) {
+        TypeName returnType = ParameterizedTypeName.get(
+                ClassName.get(List.class), dtoType);
+
+        MethodSpec findAll = MethodSpec.methodBuilder("findAll")
+                .addModifiers(Modifier.PUBLIC)
+                .returns(returnType)
+                .addStatement("return repository.findAll().stream().map(mapper::toDto).collect(java.util.stream.Collectors.toList())")
+                .build();
+
+        classBuilder.addMethod(findAll);
+    }
+
+    /**
+     * Ajoute la méthode pour trouver une entité par son ID en utilisant les mappers.
+     */
+    private void addFindByIdMethodWithMapper(TypeSpec.Builder classBuilder, TypeName entityType, TypeName dtoType, TypeName idType) {
+        TypeName returnType = ParameterizedTypeName.get(
+                ClassName.get(Optional.class), dtoType);
+
+        MethodSpec findById = MethodSpec.methodBuilder("findById")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(idType, "id")
+                .returns(returnType)
+                .addStatement("return repository.findById(id).map(mapper::toDto)")
+                .build();
+
+        classBuilder.addMethod(findById);
+    }
+
+    /**
+     * Ajoute la méthode pour sauvegarder une entité en utilisant les mappers.
+     */
+    private void addSaveMethodWithMapper(TypeSpec.Builder classBuilder, TypeName entityType, TypeName dtoType) {
+        MethodSpec save = MethodSpec.methodBuilder("save")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(dtoType, "dto")
+                .returns(dtoType)
+                .addStatement("$T entity = mapper.toEntity(dto)", entityType)
+                .addStatement("return mapper.toDto(repository.save(entity))", entityType)
+                .build();
+
+        classBuilder.addMethod(save);
     }
 }

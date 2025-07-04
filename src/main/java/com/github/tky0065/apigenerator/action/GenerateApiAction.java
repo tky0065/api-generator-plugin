@@ -26,6 +26,8 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.openapi.vfs.VirtualFile;
+
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -53,6 +55,7 @@ public class GenerateApiAction extends AnAction {
         // Initialiser les services
         this.existingFileService = new ExistingFileServiceImpl(loggingService);
     }
+
 
     @Override
     public void update(@NotNull AnActionEvent e) {
@@ -469,8 +472,13 @@ public class GenerateApiAction extends AnAction {
      * Crée récursivement les répertoires nécessaires pour un package.
      */
     private PsiDirectory createPackageDirectories(Project project, String packageName) {
-        PsiDirectory baseDir = PsiManager.getInstance(project).findDirectory(
-                project.getBaseDir());
+        // Utilisation de ProjectUtil.guessProjectDir au lieu de project.getBaseDir()
+        VirtualFile projectDir = com.intellij.openapi.project.ProjectUtil.guessProjectDir(project);
+        if (projectDir == null) {
+            throw new IllegalStateException("Impossible de trouver le répertoire de base du projet");
+        }
+
+        PsiDirectory baseDir = PsiManager.getInstance(project).findDirectory(projectDir);
         if (baseDir == null) {
             throw new IllegalStateException("Impossible de trouver le répertoire de base du projet");
         }

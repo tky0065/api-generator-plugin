@@ -3,7 +3,6 @@ package com.github.tky0065.apigenerator.service.impl;
 import com.github.tky0065.apigenerator.service.ExistingFileService;
 import com.github.tky0065.apigenerator.service.LoggingService;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiFile;
@@ -11,9 +10,6 @@ import com.intellij.psi.PsiManager;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -147,20 +143,24 @@ public class ExistingFileServiceImpl implements ExistingFileService {
     /**
      * Trouve un fichier Java dans le projet.
      */
+
     private PsiFile findFile(Project project, String packageName, String className) {
-        // Convertir le package en chemin de répertoire
         String packagePath = packageName.replace('.', '/');
-
-        // Rechercher dans les répertoires sources du projet
         PsiManager psiManager = PsiManager.getInstance(project);
-        VirtualFile baseDir = project.getBaseDir();
 
+        // Récupérer le répertoire racine du projet
+        VirtualFile projectDir = com.intellij.openapi.project.ProjectUtil.guessProjectDir(project);
+        if (projectDir == null) {
+            return null;
+        }
+
+        PsiDirectory baseDir = psiManager.findDirectory(projectDir);
         if (baseDir == null) {
             return null;
         }
 
         // Chercher dans src/main/java
-        VirtualFile srcDir = baseDir.findFileByRelativePath("src/main/java");
+        VirtualFile srcDir = projectDir.findFileByRelativePath("src/main/java");
         if (srcDir != null) {
             VirtualFile packageDir = srcDir.findFileByRelativePath(packagePath);
             if (packageDir != null) {
@@ -173,6 +173,7 @@ public class ExistingFileServiceImpl implements ExistingFileService {
 
         return null;
     }
+
 
     /**
      * Ajoute une signature à un fichier généré.
