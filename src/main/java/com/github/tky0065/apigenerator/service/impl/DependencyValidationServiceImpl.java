@@ -38,7 +38,7 @@ public class DependencyValidationServiceImpl implements DependencyValidationServ
             "JPA Entity", "<dependency>\n    <groupId>jakarta.persistence</groupId>\n    <artifactId>jakarta.persistence-api</artifactId>\n    <version>3.1.0</version>\n</dependency>",
             "Spring Data JPA", "<dependency>\n    <groupId>org.springframework.boot</groupId>\n    <artifactId>spring-boot-starter-data-jpa</artifactId>\n</dependency>",
             "Spring Web", "<dependency>\n    <groupId>org.springframework.boot</groupId>\n    <artifactId>spring-boot-starter-web</artifactId>\n</dependency>",
-            "MapStruct", "<dependency>\n    <groupId>org.mapstruct</groupId>\n    <artifactId>mapstruct</artifactId>\n    <version>1.5.3.Final</version>\n</dependency>\n<dependency>\n    <groupId>org.mapstruct</groupId>\n    <artifactId>mapstruct-processor</artifactId>\n    <version>1.5.3.Final</version>\n    <scope>provided</scope>\n</dependency>",
+            "MapStruct", "<dependency>\n    <groupId>org.mapstruct</groupId>\n    <artifactId>mapstruct</artifactId>\n    <version>1.6.3.Final</version>\n</dependency>\n<dependency>\n    <groupId>org.mapstruct</groupId>\n    <artifactId>mapstruct-processor</artifactId>\n    <version>1.6.3.Final</version>\n    <scope>provided</scope>\n</dependency>",
             "Lombok", "<dependency>\n    <groupId>org.projectlombok</groupId>\n    <artifactId>lombok</artifactId>\n    <version>1.18.28</version>\n    <scope>provided</scope>\n</dependency>"
     );
 
@@ -47,7 +47,7 @@ public class DependencyValidationServiceImpl implements DependencyValidationServ
             "JPA Entity", "implementation 'jakarta.persistence:jakarta.persistence-api:3.1.0'",
             "Spring Data JPA", "implementation 'org.springframework.boot:spring-boot-starter-data-jpa'",
             "Spring Web", "implementation 'org.springframework.boot:spring-boot-starter-web'",
-            "MapStruct", "implementation 'org.mapstruct:mapstruct:1.5.3.Final'\nannotationProcessor 'org.mapstruct:mapstruct-processor:1.5.3.Final'",
+            "MapStruct", "implementation 'org.mapstruct:mapstruct:1.6.3'\nannotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'",
             "Lombok", "compileOnly 'org.projectlombok:lombok:1.18.28'\nannotationProcessor 'org.projectlombok:lombok:1.18.28'"
     );
 

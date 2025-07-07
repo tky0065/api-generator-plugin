@@ -96,6 +96,13 @@ public class DtoGenerator implements CodeGenerator {
     }
 
     private void addField(TypeSpec.Builder classBuilder, String name, TypeName typeName, boolean useLombok) {
+        // Vérifier si un champ avec ce nom existe déjà pour éviter les doublons
+        for (FieldSpec field : classBuilder.fieldSpecs) {
+            if (field.name.equals(name)) {
+                return; // Ne pas ajouter de doublons
+            }
+        }
+
         FieldSpec.Builder fieldBuilder = FieldSpec.builder(typeName, name, Modifier.PRIVATE);
         classBuilder.addField(fieldBuilder.build());
     }

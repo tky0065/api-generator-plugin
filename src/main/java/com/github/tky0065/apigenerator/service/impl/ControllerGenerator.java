@@ -200,9 +200,7 @@ public class ControllerGenerator implements CodeGenerator {
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(getMappingAnnotation)
                 .returns(returnType)
-                .addStatement("List<$T> entities = service.findAll()", entityType)
-                .addStatement("// Ici, vous devez convertir les entités en DTOs si nécessaire")
-                .addStatement("return $T.ok(entities)", ClassName.get("org.springframework.http", "ResponseEntity"))
+                .addStatement("return $T.ok(service.findAll())", ClassName.get("org.springframework.http", "ResponseEntity"))
                 .build();
 
         classBuilder.addMethod(getAllMethod);
@@ -222,7 +220,9 @@ public class ControllerGenerator implements CodeGenerator {
                 .build();
 
         ClassName pathVariable = ClassName.get("org.springframework.web.bind.annotation", "PathVariable");
+        ClassName responseEntityClass = ClassName.get("org.springframework.http", "ResponseEntity");
 
+        // Générer le code avec une seule instruction pour éviter les problèmes de formatage
         MethodSpec getByIdMethod = MethodSpec.methodBuilder("getById")
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(getMappingAnnotation)
@@ -230,9 +230,9 @@ public class ControllerGenerator implements CodeGenerator {
                         .addAnnotation(pathVariable)
                         .build())
                 .returns(returnType)
-                .addStatement("return service.findById(id)")
-                .addStatement("    .map(entity -> $T.ok(entity))", ClassName.get("org.springframework.http", "ResponseEntity"))
-                .addStatement("    .orElseGet(() -> $T.notFound().build())", ClassName.get("org.springframework.http", "ResponseEntity"))
+                .addCode("return service.findById(id)\n")
+                .addCode("        .map($T::ok)\n", responseEntityClass)
+                .addCode("        .orElseGet(() -> $T.notFound().build());\n", responseEntityClass)
                 .build();
 
         classBuilder.addMethod(getByIdMethod);
@@ -256,11 +256,9 @@ public class ControllerGenerator implements CodeGenerator {
                         .addAnnotation(requestBody)
                         .build())
                 .returns(returnType)
-                .addStatement("// Ici, vous devez convertir le DTO en entité si nécessaire")
-                .addStatement("$T savedEntity = service.save(($T) dto)", entityType, entityType)
-                .addStatement("// Puis reconvertir en DTO pour la réponse")
-                .addStatement("return $T.created(null).body(($T) savedEntity)",
-                        ClassName.get("org.springframework.http", "ResponseEntity"), dtoType)
+                .addStatement("$T savedDto = service.save(dto)", dtoType)
+                .addStatement("return $T.created(null).body(savedDto)",
+                        ClassName.get("org.springframework.http", "ResponseEntity"))
                 .build();
 
         classBuilder.addMethod(createMethod);
@@ -281,7 +279,9 @@ public class ControllerGenerator implements CodeGenerator {
 
         ClassName pathVariable = ClassName.get("org.springframework.web.bind.annotation", "PathVariable");
         ClassName requestBody = ClassName.get("org.springframework.web.bind.annotation", "RequestBody");
+        ClassName responseEntityClass = ClassName.get("org.springframework.http", "ResponseEntity");
 
+        // Générer le code avec une structure plus explicite pour éviter les problèmes de formatage
         MethodSpec updateMethod = MethodSpec.methodBuilder("update")
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(putMappingAnnotation)
@@ -292,15 +292,13 @@ public class ControllerGenerator implements CodeGenerator {
                         .addAnnotation(requestBody)
                         .build())
                 .returns(returnType)
-                .addStatement("return service.findById(id)")
-                .addStatement("    .map(existingEntity -> {")
-                .addStatement("        // Ici, mettre à jour l'entité existante avec les valeurs du DTO")
-                .addStatement("        $T updatedEntity = service.save(existingEntity)", entityType)
-                .addStatement("        return $T.ok(($T) updatedEntity)",
-                        ClassName.get("org.springframework.http", "ResponseEntity"), dtoType)
-                .addStatement("    })")
-                .addStatement("    .orElseGet(() -> $T.notFound().build())",
-                        ClassName.get("org.springframework.http", "ResponseEntity"))
+                .addCode("return service.findById(id)\n")
+                .addCode("        .map(existingDto -> {\n")
+                .addCode("            // Ici, vous pouvez copier les champs modifiables de dto vers existingDto si besoin\n")
+                .addCode("            $T updatedDto = service.save(dto);\n", dtoType)
+                .addCode("            return $T.ok(updatedDto);\n", responseEntityClass)
+                .addCode("        })\n")
+                .addCode("        .orElseGet(() -> $T.notFound().build());\n", responseEntityClass)
                 .build();
 
         classBuilder.addMethod(updateMethod);
@@ -329,8 +327,7 @@ public class ControllerGenerator implements CodeGenerator {
                         .build())
                 .returns(returnType)
                 .addStatement("service.deleteById(id)")
-                .addStatement("return $T.noContent().build()",
-                        ClassName.get("org.springframework.http", "ResponseEntity"))
+                .addStatement("return $T.noContent().build()", ClassName.get("org.springframework.http", "ResponseEntity"))
                 .build();
 
         classBuilder.addMethod(deleteMethod);

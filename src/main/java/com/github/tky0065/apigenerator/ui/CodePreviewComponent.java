@@ -155,7 +155,7 @@ public class CodePreviewComponent {
     private void updateDtoPreview(ApiGeneratorConfig updatedConfig) {
         CodeGenerator dtoGenerator = new DtoGenerator();
         String code = dtoGenerator.generateCode(project, entityModel, updatedConfig);
-        EditorFactory.getInstance().releaseEditor(dtoEditor);
+        // Suppression de l'appel redondant à releaseEditor ici, car updateEditor le fait déjà
         dtoEditor = updateEditor(dtoEditor, code);
         tabbedPane.setComponentAt(tabbedPane.indexOfTab("DTO"), createEditorPanel(dtoEditor));
     }
@@ -166,7 +166,7 @@ public class CodePreviewComponent {
     private void updateMapperPreview(ApiGeneratorConfig updatedConfig) {
         CodeGenerator mapperGenerator = new MapperGenerator();
         String code = mapperGenerator.generateCode(project, entityModel, updatedConfig);
-        EditorFactory.getInstance().releaseEditor(mapperEditor);
+        // Suppression de l'appel redondant à releaseEditor
         mapperEditor = updateEditor(mapperEditor, code);
         tabbedPane.setComponentAt(tabbedPane.indexOfTab("Mapper"), createEditorPanel(mapperEditor));
     }
@@ -177,7 +177,7 @@ public class CodePreviewComponent {
     private void updateRepositoryPreview(ApiGeneratorConfig updatedConfig) {
         CodeGenerator repositoryGenerator = new RepositoryGenerator();
         String code = repositoryGenerator.generateCode(project, entityModel, updatedConfig);
-        EditorFactory.getInstance().releaseEditor(repositoryEditor);
+        // Suppression de l'appel redondant à releaseEditor
         repositoryEditor = updateEditor(repositoryEditor, code);
         tabbedPane.setComponentAt(tabbedPane.indexOfTab("Repository"), createEditorPanel(repositoryEditor));
     }
@@ -188,7 +188,7 @@ public class CodePreviewComponent {
     private void updateServicePreview(ApiGeneratorConfig updatedConfig) {
         CodeGenerator serviceGenerator = new ServiceGenerator();
         String code = serviceGenerator.generateCode(project, entityModel, updatedConfig);
-        EditorFactory.getInstance().releaseEditor(serviceEditor);
+        // Suppression de l'appel redondant à releaseEditor
         serviceEditor = updateEditor(serviceEditor, code);
         tabbedPane.setComponentAt(tabbedPane.indexOfTab("Service"), createEditorPanel(serviceEditor));
     }
@@ -199,7 +199,7 @@ public class CodePreviewComponent {
     private void updateControllerPreview(ApiGeneratorConfig updatedConfig) {
         CodeGenerator controllerGenerator = new ControllerGenerator();
         String code = controllerGenerator.generateCode(project, entityModel, updatedConfig);
-        EditorFactory.getInstance().releaseEditor(controllerEditor);
+        // Suppression de l'appel redondant à releaseEditor
         controllerEditor = updateEditor(controllerEditor, code);
         tabbedPane.setComponentAt(tabbedPane.indexOfTab("Controller"), createEditorPanel(controllerEditor));
     }

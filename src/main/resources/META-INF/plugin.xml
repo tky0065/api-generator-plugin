@@ -1,17 +1,23 @@
 <idea-plugin>
     <id>com.github.tky0065.apigenerator</id>
-    <name>API Generator</name>
+    <name>Spring CRUD API Generator</name>
     <vendor email="support@github.com" url="https://github.com/tky0065">tky0065</vendor>
 
     <description><![CDATA[
-        Plugin pour générer automatiquement un API CRUD complet à partir d'une entité JPA.<br>
+        This plugin automatically generates a complete CRUD API from a JPA entity. It simplifies the development process by creating all necessary components for your Spring Boot application with a few clicks.
+        <br><br>
+        Features include:
         <ul>
-            <li>Génération de DTO avec Lombok</li>
-            <li>Repository JPA</li>
-            <li>Service avec méthodes CRUD</li>
-            <li>Controller REST</li>
-            <li>Mappeurs entre entités et DTOs</li>
+            <li>Generation of DTOs with Lombok annotations</li>
+            <li>JPA Repository interfaces</li>
+            <li>Service layer with complete CRUD methods</li>
+            <li>RESTful Controllers with appropriate endpoints</li>
+            <li>Entity-to-DTO mappers</li>
+            <li>Custom exception handlers</li>
+            <li>Basic validation setup</li>
         </ul>
+        <br>
+        Save hours of boilerplate coding and focus on your business logic instead.
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
@@ -22,6 +28,12 @@
     </extensions>
 
     <actions>
-        <!-- Les actions seront ajoutées ultérieurement -->
+        <action id="com.github.tky0065.apigenerator.action.GenerateApiAction"
+                class="com.github.tky0065.apigenerator.action.GenerateApiAction"
+                text="Generate API from Entity"
+                description="Generate DTO, Repository, Service and Controller from JPA Entity">
+            <add-to-group group-id="GenerateGroup" anchor="last"/>
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
     </actions>
 </idea-plugin>

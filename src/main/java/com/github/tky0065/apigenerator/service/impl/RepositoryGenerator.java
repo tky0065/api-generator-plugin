@@ -33,8 +33,8 @@ public class RepositoryGenerator implements CodeGenerator {
         ClassName repositoryAnnotation = ClassName.get("org.springframework.stereotype", "Repository");
         interfaceBuilder.addAnnotation(repositoryAnnotation);
 
-        // Ajouter des méthodes de recherche personnalisées basées sur les champs de l'entité
-        addCustomQueryMethods(interfaceBuilder, entityModel);
+        // Ne pas générer de méthodes personnalisées pour éviter les doublons
+        // Spring Data JPA génère déjà automatiquement les méthodes de base
 
         // Créer le fichier Java
         JavaFile javaFile = JavaFile.builder(getGeneratedPackageName(entityModel, config), interfaceBuilder.build())
@@ -75,61 +75,6 @@ public class RepositoryGenerator implements CodeGenerator {
 
         // Par défaut, utiliser Long
         return ClassName.get("java.lang", "Long");
-    }
-
-    /**
-     * Ajoute des méthodes de recherche personnalisées basées sur les champs de l'entité.
-     */
-    private void addCustomQueryMethods(TypeSpec.Builder interfaceBuilder, EntityModel entityModel) {
-        // Ajouter findBy... pour les champs importants (non-collection, non-transient, etc.)
-        for (EntityModel.EntityField field : entityModel.getFields()) {
-            // Ignorer les champs qui ne sont pas adaptés pour les requêtes
-            if (field.isTransient() || field.isCollection()) {
-                continue;
-            }
-
-            // Si c'est un champ de type String, ajouter une méthode findByFieldContainingIgnoreCase
-            if ("String".equals(field.getType())) {
-                String methodName = "findBy" + capitalizeFirstLetter(field.getName()) + "ContainingIgnoreCase";
-
-                TypeName returnType = ParameterizedTypeName.get(
-                        ClassName.get("java.util", "List"),
-                        ClassName.get(entityModel.getPackageName(), entityModel.getClassName())
-                );
-
-                MethodSpec method = MethodSpec.methodBuilder(methodName)
-                        .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                        .returns(returnType)
-                        .addParameter(String.class, field.getName())
-                        .build();
-
-                interfaceBuilder.addMethod(method);
-            }
-            // Pour les autres types, ajouter une méthode findByField
-            else {
-                String methodName = "findBy" + capitalizeFirstLetter(field.getName());
-
-                TypeName returnType = ParameterizedTypeName.get(
-                        ClassName.get("java.util", "List"),
-                        ClassName.get(entityModel.getPackageName(), entityModel.getClassName())
-                );
-
-                MethodSpec method = MethodSpec.methodBuilder(methodName)
-                        .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                        .returns(returnType)
-                        .addParameter(determineTypeName(field.getType()), field.getName())
-                        .build();
-
-                interfaceBuilder.addMethod(method);
-            }
-        }
-    }
-
-    private String capitalizeFirstLetter(String input) {
-        if (input == null || input.isEmpty()) {
-            return input;
-        }
-        return input.substring(0, 1).toUpperCase() + input.substring(1);
     }
 
     private TypeName determineTypeName(String type) {
